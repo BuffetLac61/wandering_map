@@ -1,0 +1,187 @@
+/* The Marauder's Map — parchment, ink, and footprints. */
+
+/* ---------- Parchment filter over the page ------------------------------- */
+html.marauders-filter {
+  filter: sepia(0.35) contrast(1.05) saturate(0.85) hue-rotate(-8deg);
+}
+
+.marauders-texture {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483640;
+  mix-blend-mode: multiply;
+  opacity: 0.28;
+  background-image:
+    radial-gradient(
+      ellipse at center,
+      rgba(233, 207, 160, 0) 0%,
+      rgba(120, 80, 40, 0.55) 100%
+    ),
+    url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'>\
+<filter id='n'>\
+<feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/>\
+<feColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.27  0 0 0 0 0.12  0 0 0 0.55 0'/>\
+</filter>\
+<rect width='240' height='240' filter='url(%23n)'/>\
+</svg>");
+  background-size: cover, 240px 240px;
+}
+
+/* ---------- Full-screen overlay ------------------------------------------ */
+.marauders-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  will-change: opacity;
+}
+
+.marauders-overlay.marauders-fade-out {
+  animation: marauders-fade 700ms ease-out forwards;
+}
+
+@keyframes marauders-fade {
+  to { opacity: 0; }
+}
+
+/* ---------- The parchment sheet ------------------------------------------ */
+.marauders-parchment {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at center,
+      #f1dca8 0%,
+      #d8b77a 55%,
+      #8b6230 100%
+    );
+  transform-origin: center;
+  animation: marauders-unfold 800ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  box-shadow: inset 0 0 260px rgba(60, 30, 10, 0.55);
+}
+
+.marauders-parchment::before {
+  /* Paper grain */
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'>\
+<filter id='g'>\
+<feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' seed='3'/>\
+<feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.22  0 0 0 0 0.10  0 0 0 0.6 0'/>\
+</filter>\
+<rect width='320' height='320' filter='url(%23g)'/>\
+</svg>");
+  background-size: 320px 320px;
+}
+
+.marauders-parchment::after {
+  /* Creases */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 48%, rgba(70, 40, 15, 0.18) 50%, transparent 52%),
+    linear-gradient(0deg,  transparent 48%, rgba(70, 40, 15, 0.12) 50%, transparent 52%);
+}
+
+.marauders-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(30, 15, 5, 0.5) 100%
+  );
+}
+
+@keyframes marauders-unfold {
+  0%   { transform: scaleY(0.02) scaleX(0.6); opacity: 0.2; }
+  40%  { transform: scaleY(1)    scaleX(0.6); opacity: 1; }
+  100% { transform: scaleY(1)    scaleX(1);   opacity: 1; }
+}
+
+/* Closing fold — reverse of the unfold. */
+.marauders-closing .marauders-parchment-fold {
+  animation: marauders-fold 650ms 350ms cubic-bezier(0.55, 0, 0.68, 0.05) forwards;
+}
+
+@keyframes marauders-fold {
+  0%   { transform: scaleY(1)    scaleX(1);   opacity: 1; }
+  60%  { transform: scaleY(1)    scaleX(0.6); opacity: 1; }
+  100% { transform: scaleY(0.02) scaleX(0.6); opacity: 0; }
+}
+
+/* ---------- Ink text ----------------------------------------------------- */
+.marauders-ink {
+  position: relative;
+  width: min(90vw, 1200px);
+  height: auto;
+  filter: drop-shadow(0 1px 0 rgba(60, 30, 10, 0.35));
+}
+
+.marauders-ink-text {
+  fill: transparent;
+  stroke: #1a0d05;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 2400;
+  stroke-dashoffset: 2400;
+  animation:
+    marauders-draw 2200ms 800ms ease-out forwards,
+    marauders-fill 900ms 2600ms ease-out forwards;
+}
+
+/* Closing text — appears already filled, no drawing delay. */
+.marauders-ink-text-instant {
+  fill: #1a0d05;
+  stroke: #1a0d05;
+  stroke-width: 0.6;
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  animation: marauders-bleed 650ms ease-out forwards;
+}
+
+@keyframes marauders-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes marauders-fill {
+  to { fill: #1a0d05; }
+}
+
+@keyframes marauders-bleed {
+  0%   { opacity: 0; filter: blur(6px); }
+  100% { opacity: 1; filter: blur(0);   }
+}
+
+/* ---------- Cursor footprint canvas -------------------------------------- */
+.marauders-trail {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483646;
+}
+
+/* Respect reduced motion — skip decorative animations. */
+@media (prefers-reduced-motion: reduce) {
+  .marauders-parchment,
+  .marauders-parchment-fold,
+  .marauders-ink-text,
+  .marauders-ink-text-instant,
+  .marauders-overlay.marauders-fade-out {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}
