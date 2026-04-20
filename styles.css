@@ -1,6 +1,10 @@
 /* The Marauder's Map — styles
  * Map + footstep design ported from oliviale's CodePen:
  * https://codepen.io/oliviale (CSS Animations / Harry Potter collections).
+ *
+ * Image URLs are injected at runtime as CSS custom properties on :root by
+ * content.js (using chrome.runtime.getURL). This is what lets the artwork
+ * bypass third-party sites' CSP.
  */
 
 /* =========================================================================
@@ -77,42 +81,30 @@
    ========================================================================= */
 .marauders-phrase {
   width: min(90vw, 900px);
+  text-align: center;
+  font-family: "Segoe Script", "Brush Script MT", "Lucida Handwriting",
+               "Apple Chancery", "Satisfy", cursive;
+  color: #f1e3c2;
+  font-size: clamp(34px, 5vw, 56px);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  text-shadow:
+    0 0 1px rgba(241, 227, 194, 0.6),
+    0 1px 2px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  filter: blur(6px);
+  animation: marauders-phrase-in 1400ms 300ms ease-out forwards;
 }
 
-.marauders-ink {
-  width: 100%;
-  height: auto;
-  display: block;
-  filter: drop-shadow(0 1px 0 rgba(60, 30, 10, 0.35));
+.marauders-phrase.marauders-phrase-instant {
+  font-size: clamp(42px, 6vw, 72px);
+  animation: marauders-phrase-in 500ms ease-out forwards;
 }
 
-.marauders-ink-text {
-  fill: transparent;
-  stroke: #f1e3c2;
-  stroke-width: 1.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 2400;
-  stroke-dashoffset: 2400;
-  animation:
-    marauders-draw 1600ms 200ms ease-out forwards,
-    marauders-fill  700ms 1700ms ease-out forwards;
-}
-
-.marauders-ink-text-instant {
-  fill: #f1e3c2;
-  stroke: #f1e3c2;
-  stroke-width: 0.6;
-  stroke-dasharray: none;
-  stroke-dashoffset: 0;
-  animation: marauders-bleed 500ms ease-out forwards;
-}
-
-@keyframes marauders-draw { to { stroke-dashoffset: 0; } }
-@keyframes marauders-fill { to { fill: #f1e3c2; } }
-@keyframes marauders-bleed {
+@keyframes marauders-phrase-in {
   0%   { opacity: 0; filter: blur(6px); }
-  100% { opacity: 1; filter: blur(0);   }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; filter: blur(0); }
 }
 
 /* =========================================================================
@@ -123,7 +115,7 @@
   width: 306px;
   height: 600px;
   margin: auto;
-  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/9.png") center center / cover;
+  background: var(--mm-base) center center / cover;
   position: relative;
   display: inline-block;
 }
@@ -154,20 +146,20 @@
   box-shadow: 0 -1px 6px rgba(97, 83, 73, 0.5);
 }
 .marauders-flap-1 .marauders-map-flap-front {
-  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/mini-1.png") center left / cover;
+  background: var(--mm-flap1f) center left / cover;
 }
 .marauders-flap-1 .marauders-map-flap-back {
-  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/mini-3.png") -3px 0 / cover;
+  background: var(--mm-flap1b) -3px 0 / cover;
 }
 .marauders-flap-2 {
   box-shadow: 0 1px 6px rgba(97, 83, 73, 0.5);
   top: 50%;
 }
 .marauders-flap-2 .marauders-map-flap-front {
-  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/mini-2.png") center left / cover;
+  background: var(--mm-flap2f) center left / cover;
 }
 .marauders-flap-2 .marauders-map-flap-back {
-  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/mini-4.png") -3px 0 / cover;
+  background: var(--mm-flap2b) -3px 0 / cover;
 }
 
 /* ---------- Map sides (6 panels that unfold outward) -------------------- */
@@ -191,7 +183,7 @@
   backface-visibility: hidden;
 }
 .marauders-map-side .marauders-back {
-  background-image: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/back.png");
+  background-image: var(--mm-back);
 }
 
 .marauders-side-1 { left: 0;   margin-left: 1.5px; }
@@ -202,12 +194,12 @@
 .marauders-side-4 .marauders-back { transform: rotateY(180deg); }
 .marauders-side-5 { left: 0; }
 .marauders-side-5 .marauders-back {
-  background-image: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/1.png");
+  background-image: var(--mm-side5b);
 }
 .marauders-side-6 { left: 50%; }
 .marauders-side-6 .marauders-front { background-size: 99.5%; }
 .marauders-side-6 .marauders-back {
-  background-image: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/17.png");
+  background-image: var(--mm-side6b);
 }
 
 /* ---------- Scroll name tags (Severus Snape / Harry Potter) ------------- */
@@ -217,9 +209,9 @@
   left: -60px;
   width: 150px;
   height: 30px;
-  font: 15px Satisfy, "Dancing Script", cursive;
+  font: 15px Satisfy, "Dancing Script", "Segoe Script", cursive;
   text-align: center;
-  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/scroll.svg") center center / cover;
+  background: var(--mm-scroll) center center / cover;
   z-index: 10;
   color: #615349;
   cursor: default;
@@ -419,8 +411,7 @@
 @media (prefers-reduced-motion: reduce) {
   .marauders-overlay,
   .marauders-overlay.marauders-fade-out,
-  .marauders-ink-text,
-  .marauders-ink-text-instant,
+  .marauders-phrase,
   .marauders-map-base,
   .marauders-map-flap,
   .marauders-map-side,

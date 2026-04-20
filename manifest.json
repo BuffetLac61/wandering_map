@@ -24,5 +24,11 @@
       "match_about_blank": false
     }
   ],
+  "web_accessible_resources": [
+    {
+      "resources": ["images/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "incognito": "spanning"
 }

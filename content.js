@@ -10,10 +10,9 @@
   const OPEN_PHRASE = "I solemnly swear that I am up to no good.";
   const CLOSE_PHRASE = "Mischief Managed.";
 
-  // Map artwork hosted on the original CodePen author's S3 bucket.
-  // Strict CSPs (img-src whitelists) may block these — see README.
-  const ASSET_BASE = "https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/";
-  const A = (name) => `${ASSET_BASE}${name}`;
+  // Map artwork is bundled as web_accessible_resources so it loads from
+  // chrome-extension:// URLs regardless of the host page's CSP.
+  const IMG = (name) => chrome.runtime.getURL(`images/${name}`);
 
   // ---------- Mount helpers -------------------------------------------------
   const mount = (el) => {
@@ -27,6 +26,21 @@
     } else {
       fn();
     }
+  };
+
+  // Inject every static image URL as a CSS custom property on :root.
+  // This is how styles.css picks up the extension-local URLs.
+  const injectImageVars = () => {
+    const s = document.documentElement.style;
+    s.setProperty("--mm-base",    `url("${IMG("9.png")}")`);
+    s.setProperty("--mm-back",    `url("${IMG("back.png")}")`);
+    s.setProperty("--mm-flap1f",  `url("${IMG("mini-1.png")}")`);
+    s.setProperty("--mm-flap1b",  `url("${IMG("mini-3.png")}")`);
+    s.setProperty("--mm-flap2f",  `url("${IMG("mini-2.png")}")`);
+    s.setProperty("--mm-flap2b",  `url("${IMG("mini-4.png")}")`);
+    s.setProperty("--mm-side5b",  `url("${IMG("1.png")}")`);
+    s.setProperty("--mm-side6b",  `url("${IMG("17.png")}")`);
+    s.setProperty("--mm-scroll",  `url("${IMG("scroll.svg")}")`);
   };
 
   // ---------- The folded map ------------------------------------------------
@@ -52,26 +66,26 @@
         <div class="marauders-map-flap-back"></div>
       </div>
       <div class="marauders-map-side marauders-side-1">
-        <div class="marauders-front" style="--image:url('${A("8.png")}')"></div>
+        <div class="marauders-front" style="--image:url('${IMG("8.png")}')"></div>
         <div class="marauders-back"></div>
       </div>
       <div class="marauders-map-side marauders-side-2">
-        <div class="marauders-front" style="--image:url('${A("18.png")}')"></div>
+        <div class="marauders-front" style="--image:url('${IMG("18.png")}')"></div>
         <div class="marauders-back"></div>
       </div>
       <div class="marauders-map-side marauders-side-3">
-        <div class="marauders-front" style="--image:url('${A("7.png")}')"></div>
+        <div class="marauders-front" style="--image:url('${IMG("7.png")}')"></div>
         <div class="marauders-back"></div>
       </div>
       <div class="marauders-map-side marauders-side-4">
-        <div class="marauders-front" style="--image:url('${A("10.png")}')"></div>
+        <div class="marauders-front" style="--image:url('${IMG("10.png")}')"></div>
       </div>
       <div class="marauders-map-side marauders-side-5">
-        <div class="marauders-front" style="--image:url('${A("6.png")}')"></div>
+        <div class="marauders-front" style="--image:url('${IMG("6.png")}')"></div>
         <div class="marauders-back"></div>
       </div>
       <div class="marauders-map-side marauders-side-6">
-        <div class="marauders-front" style="--image:url('${A("11.png")}')"></div>
+        <div class="marauders-front" style="--image:url('${IMG("11.png")}')"></div>
         <div class="marauders-back"></div>
       </div>
     </div>
@@ -85,16 +99,7 @@
     overlay.innerHTML = `
       <div class="marauders-stage">
         ${buildMap()}
-        <div class="marauders-phrase">
-          <svg viewBox="0 0 1200 120" class="marauders-ink" preserveAspectRatio="xMidYMid meet">
-            <text x="600" y="85" text-anchor="middle"
-                  class="marauders-ink-text"
-                  font-family="'Satisfy','Dancing Script','Apple Chancery','Segoe Script',cursive"
-                  font-size="62">
-              ${OPEN_PHRASE}
-            </text>
-          </svg>
-        </div>
+        <p class="marauders-phrase">${OPEN_PHRASE}</p>
       </div>
     `;
     return overlay;
@@ -107,7 +112,7 @@
     const mapBase = overlay.querySelector(".marauders-map-base");
 
     // Timeline:
-    //   0ms     — overlay mounts, map folded, phrase begins drawing
+    //   0ms     — overlay mounts, map folded, phrase begins fade-in
     //   800ms   — map begins unfolding (CSS transitions fire)
     //   3200ms  — all flaps/sides settled (800 + 2400ms of CSS choreography)
     //   ~6000ms — footsteps walk complete (active+2.5s delay + 3s animation)
@@ -130,16 +135,7 @@
     overlay.setAttribute("aria-hidden", "true");
     overlay.innerHTML = `
       <div class="marauders-stage">
-        <div class="marauders-phrase">
-          <svg viewBox="0 0 1200 140" class="marauders-ink" preserveAspectRatio="xMidYMid meet">
-            <text x="600" y="100" text-anchor="middle"
-                  class="marauders-ink-text marauders-ink-text-instant"
-                  font-family="'Satisfy','Dancing Script','Apple Chancery','Segoe Script',cursive"
-                  font-size="84">
-              ${CLOSE_PHRASE}
-            </text>
-          </svg>
-        </div>
+        <p class="marauders-phrase marauders-phrase-instant">${CLOSE_PHRASE}</p>
       </div>
     `;
     return overlay;
@@ -209,6 +205,8 @@
   };
 
   // ---------- Boot ----------------------------------------------------------
+  injectImageVars();
+
   whenDomReady(() => {
     applyParchmentFilter();
     runOpeningSequence();

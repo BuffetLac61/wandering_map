@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sfL -o images/__TRACKED_VAR__ https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/__TRACKED_VAR__)"
+    ]
+  }
+}
