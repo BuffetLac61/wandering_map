@@ -1,0 +1,18 @@
+# Reference files from oliviale's CodePen (kept locally only)
+example.html
+example.js
+example.css
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# IDE folders
+.vscode/
+.idea/
+
+# Logs
+*.log

@@ -41,3 +41,17 @@ on the first real page load. Close the window to see *Mischief Managed*.
   Browsers don't hold tabs open for animations, so it's a brief flash —
   not a full 1s sequence. This is an unavoidable browser constraint.
 - Animations respect `prefers-reduced-motion`.
+- **Map artwork is loaded from an external S3 bucket** hosted by the
+  original CodePen author (`meowlivia.s3.us-east-2.amazonaws.com`). On
+  pages with strict `img-src` / CSP policies (banks, some SaaS apps) these
+  images may fail to load and the map will appear as empty panels. For
+  fully self-contained behavior, download the assets, drop them in an
+  `images/` folder, add them to `web_accessible_resources` in
+  `manifest.json`, and swap the URLs in `styles.css` / `content.js` for
+  `chrome.runtime.getURL(...)`.
+
+## Credits
+
+The folded-map structure, 3D-transform unfold choreography, and footstep
+shapes are adapted from [@oliviale](https://codepen.io/oliviale)'s
+Marauder's Map CodePen (CSS Animations / Harry Potter collections).

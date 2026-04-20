@@ -1,21 +1,22 @@
-/* The Marauder's Map — parchment, ink, and footprints. */
+/* The Marauder's Map — styles
+ * Map + footstep design ported from oliviale's CodePen:
+ * https://codepen.io/oliviale (CSS Animations / Harry Potter collections).
+ */
 
-/* ---------- Parchment filter over the page ------------------------------- */
-html.marauders-filter {
-  filter: sepia(0.35) contrast(1.05) saturate(0.85) hue-rotate(-8deg);
-}
-
+/* =========================================================================
+   Ambient parchment tint over the page
+   ========================================================================= */
 .marauders-texture {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 2147483640;
   mix-blend-mode: multiply;
-  opacity: 0.28;
+  opacity: 0.3;
   background-image:
     radial-gradient(
       ellipse at center,
-      rgba(233, 207, 160, 0) 0%,
+      rgba(233, 207, 160, 0.2) 0%,
       rgba(120, 80, 40, 0.55) 100%
     ),
     url("data:image/svg+xml;utf8,\
@@ -29,17 +30,30 @@ html.marauders-filter {
   background-size: cover, 240px 240px;
 }
 
-/* ---------- Full-screen overlay ------------------------------------------ */
+/* =========================================================================
+   Full-screen overlay (opening + closing)
+   ========================================================================= */
 .marauders-overlay {
   position: fixed;
   inset: 0;
   z-index: 2147483647;
   pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(20, 10, 5, 0.88) 0%,
+    rgba(5, 2, 0, 0.98) 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   will-change: opacity;
+  animation: marauders-overlay-in 500ms ease-out forwards;
+}
+
+@keyframes marauders-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .marauders-overlay.marauders-fade-out {
@@ -50,138 +64,373 @@ html.marauders-filter {
   to { opacity: 0; }
 }
 
-/* ---------- The parchment sheet ------------------------------------------ */
-.marauders-parchment {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse at center,
-      #f1dca8 0%,
-      #d8b77a 55%,
-      #8b6230 100%
-    );
-  transform-origin: center;
-  animation: marauders-unfold 800ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-  box-shadow: inset 0 0 260px rgba(60, 30, 10, 0.55);
-}
-
-.marauders-parchment::before {
-  /* Paper grain */
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.45;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'>\
-<filter id='g'>\
-<feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' seed='3'/>\
-<feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.22  0 0 0 0 0.10  0 0 0 0.6 0'/>\
-</filter>\
-<rect width='320' height='320' filter='url(%23g)'/>\
-</svg>");
-  background-size: 320px 320px;
-}
-
-.marauders-parchment::after {
-  /* Creases */
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, transparent 48%, rgba(70, 40, 15, 0.18) 50%, transparent 52%),
-    linear-gradient(0deg,  transparent 48%, rgba(70, 40, 15, 0.12) 50%, transparent 52%);
-}
-
-.marauders-vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 55%,
-    rgba(30, 15, 5, 0.5) 100%
-  );
-}
-
-@keyframes marauders-unfold {
-  0%   { transform: scaleY(0.02) scaleX(0.6); opacity: 0.2; }
-  40%  { transform: scaleY(1)    scaleX(0.6); opacity: 1; }
-  100% { transform: scaleY(1)    scaleX(1);   opacity: 1; }
-}
-
-/* Closing fold — reverse of the unfold. */
-.marauders-closing .marauders-parchment-fold {
-  animation: marauders-fold 650ms 350ms cubic-bezier(0.55, 0, 0.68, 0.05) forwards;
-}
-
-@keyframes marauders-fold {
-  0%   { transform: scaleY(1)    scaleX(1);   opacity: 1; }
-  60%  { transform: scaleY(1)    scaleX(0.6); opacity: 1; }
-  100% { transform: scaleY(0.02) scaleX(0.6); opacity: 0; }
-}
-
-/* ---------- Ink text ----------------------------------------------------- */
-.marauders-ink {
+.marauders-stage {
   position: relative;
-  width: min(90vw, 1200px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+/* =========================================================================
+   Ink phrase (I solemnly swear / Mischief Managed)
+   ========================================================================= */
+.marauders-phrase {
+  width: min(90vw, 900px);
+}
+
+.marauders-ink {
+  width: 100%;
   height: auto;
+  display: block;
   filter: drop-shadow(0 1px 0 rgba(60, 30, 10, 0.35));
 }
 
 .marauders-ink-text {
   fill: transparent;
-  stroke: #1a0d05;
+  stroke: #f1e3c2;
   stroke-width: 1.2;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 2400;
   stroke-dashoffset: 2400;
   animation:
-    marauders-draw 2200ms 800ms ease-out forwards,
-    marauders-fill 900ms 2600ms ease-out forwards;
+    marauders-draw 1600ms 200ms ease-out forwards,
+    marauders-fill  700ms 1700ms ease-out forwards;
 }
 
-/* Closing text — appears already filled, no drawing delay. */
 .marauders-ink-text-instant {
-  fill: #1a0d05;
-  stroke: #1a0d05;
+  fill: #f1e3c2;
+  stroke: #f1e3c2;
   stroke-width: 0.6;
   stroke-dasharray: none;
   stroke-dashoffset: 0;
-  animation: marauders-bleed 650ms ease-out forwards;
+  animation: marauders-bleed 500ms ease-out forwards;
 }
 
-@keyframes marauders-draw {
-  to { stroke-dashoffset: 0; }
-}
-
-@keyframes marauders-fill {
-  to { fill: #1a0d05; }
-}
-
+@keyframes marauders-draw { to { stroke-dashoffset: 0; } }
+@keyframes marauders-fill { to { fill: #f1e3c2; } }
 @keyframes marauders-bleed {
   0%   { opacity: 0; filter: blur(6px); }
   100% { opacity: 1; filter: blur(0);   }
 }
 
-/* ---------- Cursor footprint canvas -------------------------------------- */
-.marauders-trail {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2147483646;
+/* =========================================================================
+   The folded Marauder's Map
+   (structure + transforms ported from oliviale's CodePen)
+   ========================================================================= */
+.marauders-map-base {
+  width: 306px;
+  height: 600px;
+  margin: auto;
+  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/9.png") center center / cover;
+  position: relative;
+  display: inline-block;
 }
 
-/* Respect reduced motion — skip decorative animations. */
+/* ---------- Map flaps (top + bottom) ------------------------------------ */
+.marauders-map-flap {
+  transform-style: preserve-3d;
+  position: absolute;
+  width: 100%;
+  height: 25%;
+  margin: auto;
+  left: 0;
+  right: 0;
+  transition: 0.5s ease;
+  top: 25%;
+}
+.marauders-map-flap-front,
+.marauders-map-flap-back {
+  backface-visibility: hidden;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+.marauders-map-flap-back {
+  transform: scale(-1) rotateY(180deg);
+}
+.marauders-flap-1 {
+  box-shadow: 0 -1px 6px rgba(97, 83, 73, 0.5);
+}
+.marauders-flap-1 .marauders-map-flap-front {
+  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/mini-1.png") center left / cover;
+}
+.marauders-flap-1 .marauders-map-flap-back {
+  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/mini-3.png") -3px 0 / cover;
+}
+.marauders-flap-2 {
+  box-shadow: 0 1px 6px rgba(97, 83, 73, 0.5);
+  top: 50%;
+}
+.marauders-flap-2 .marauders-map-flap-front {
+  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/mini-2.png") center left / cover;
+}
+.marauders-flap-2 .marauders-map-flap-back {
+  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/mini-4.png") -3px 0 / cover;
+}
+
+/* ---------- Map sides (6 panels that unfold outward) -------------------- */
+.marauders-map-side {
+  height: 600px;
+  width: 152px;
+  position: absolute;
+  transform-style: preserve-3d;
+  transition: 0.3s ease;
+  top: 0;
+}
+.marauders-map-side .marauders-front,
+.marauders-map-side .marauders-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-repeat: no-repeat;
+  background-position: left top;
+  background-size: cover;
+  background-image: var(--image);
+  backface-visibility: hidden;
+}
+.marauders-map-side .marauders-back {
+  background-image: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/back.png");
+}
+
+.marauders-side-1 { left: 0;   margin-left: 1.5px; }
+.marauders-side-2 { left: 50%; margin-left: -2px; }
+.marauders-side-3 { left: 0;   margin-left: 3px; }
+.marauders-side-3 .marauders-back { transform: rotateY(180deg); }
+.marauders-side-4 { left: 50%; margin-left: -1px; }
+.marauders-side-4 .marauders-back { transform: rotateY(180deg); }
+.marauders-side-5 { left: 0; }
+.marauders-side-5 .marauders-back {
+  background-image: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/1.png");
+}
+.marauders-side-6 { left: 50%; }
+.marauders-side-6 .marauders-front { background-size: 99.5%; }
+.marauders-side-6 .marauders-back {
+  background-image: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/17.png");
+}
+
+/* ---------- Scroll name tags (Severus Snape / Harry Potter) ------------- */
+.marauders-scroll-name {
+  position: absolute;
+  bottom: 105px;
+  left: -60px;
+  width: 150px;
+  height: 30px;
+  font: 15px Satisfy, "Dancing Script", cursive;
+  text-align: center;
+  background: url("https://meowlivia.s3.us-east-2.amazonaws.com/codepen/map/scroll.svg") center center / cover;
+  z-index: 10;
+  color: #615349;
+  cursor: default;
+  opacity: 0;
+}
+.marauders-scroll-name p {
+  display: inline-block;
+  margin: 4px 0 0 15px;
+}
+
+/* ---------- Footsteps drawn on the map ---------------------------------- */
+.marauders-footstep {
+  position: absolute;
+  background: #615349;
+  width: 6px;
+  height: 12px;
+  border-radius: 80% 80% 70% 70% / 130% 130% 25% 25%;
+  z-index: 10;
+  opacity: 0;
+}
+.marauders-footstep::before {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  top: 110%;
+  left: 0;
+  background: #615349;
+  border-radius: 0 0 100% 100%;
+}
+.marauders-footstep.marauders-left  { transform: rotate(5deg); }
+.marauders-footstep.marauders-right { transform: rotate(-3deg) translateY(15px) translateX(10px); }
+
+.marauders-footsteps-1 .marauders-footstep.marauders-left {
+  bottom: 150px; left: 18px; transform: rotate(35deg);
+}
+.marauders-footsteps-1 .marauders-footstep.marauders-right {
+  bottom: 150px; left: 28px; transform: rotate(30deg);
+}
+.marauders-footsteps-2 .marauders-footstep.marauders-left {
+  bottom: 285px; left: 280px; transform: rotate(-90deg);
+}
+.marauders-footsteps-2 .marauders-footstep.marauders-right {
+  bottom: 275px; left: 285px; transform: rotate(-85deg);
+}
+.marauders-footsteps-2 .marauders-scroll-name {
+  bottom: 300px; left: 220px;
+}
+
+/* ---------- Unfolded state (map-base.marauders-active) ------------------ */
+.marauders-map-base.marauders-active .marauders-flap-1 {
+  transform: rotateX(180deg);
+  transform-origin: top center;
+  transition: 0.6s transform 1.5s;
+}
+.marauders-map-base.marauders-active .marauders-flap-2 {
+  transform: rotateX(180deg);
+  transform-origin: bottom center;
+  transition: 0.6s transform 1.8s;
+}
+.marauders-map-base.marauders-active .marauders-side-1 {
+  transform-origin: center left;
+  transform: rotateY(180deg) skewY(2deg);
+  transition: 0.5s all ease-in-out 0.6s;
+}
+.marauders-map-base.marauders-active .marauders-side-1 .marauders-front {
+  transform: rotateY(180deg);
+}
+.marauders-map-base.marauders-active .marauders-side-2 {
+  transform: rotateY(180deg) skewY(-2deg);
+  transform-origin: center right;
+  transition: 0.5s all ease-in-out 0.6s;
+}
+.marauders-map-base.marauders-active .marauders-side-2 .marauders-front {
+  transform: rotateY(180deg);
+}
+.marauders-map-base.marauders-active .marauders-side-3 {
+  left: -50%;
+  transform: skewY(2deg) translateX(-100%);
+  top: 8px;
+  transition: 0.5s transform ease 0.8s, 0.3s left ease 0.8s, 0.5s top ease 0.8s;
+}
+.marauders-map-base.marauders-active .marauders-side-4 {
+  left: 100%;
+  transform: skewY(-2deg) translateX(100%);
+  top: 8px;
+  margin-left: -7px;
+  transition: 0.5s transform ease 0.8s, 0.3s left ease 0.8s, 0.5s top ease 0.8s,
+              0.5s margin ease 0.8s;
+}
+.marauders-map-base.marauders-active .marauders-side-5 {
+  left: -100%;
+  transform-origin: center left;
+  transform: rotateY(180deg);
+  transition: 0.5s transform, 0.7s left 0.8s, 0.2s margin 0.8s;
+  top: 0;
+  margin-left: 4px;
+}
+.marauders-map-base.marauders-active .marauders-side-5 .marauders-front {
+  transform: rotateY(180deg);
+  transition: 0.1s transform;
+}
+.marauders-map-base.marauders-active .marauders-side-6 {
+  left: 150%;
+  transform: rotateY(180deg);
+  transform-origin: center right;
+  margin-left: -8px;
+  transition: 0.5s transform 0.3s, 0.7s left 0.8s, 0.5s top 0.8s, 0.5s margin 0.8s;
+}
+.marauders-map-base.marauders-active .marauders-side-6 .marauders-front {
+  transform: rotateY(180deg);
+  transition: 0.1s transform;
+}
+.marauders-map-base.marauders-active .marauders-footstep,
+.marauders-map-base.marauders-active .marauders-scroll-name {
+  opacity: 1;
+  transition: 0.5s opacity 2.5s;
+}
+.marauders-map-base.marauders-active .marauders-footsteps-1 .marauders-footstep {
+  animation: 3s marauders-map-footsteps-1 ease 2.5s forwards;
+}
+.marauders-map-base.marauders-active .marauders-footsteps-1 .marauders-scroll-name {
+  animation: 3s marauders-map-scroll-1 ease 2.5s forwards;
+}
+.marauders-map-base.marauders-active .marauders-footsteps-2 .marauders-footstep {
+  animation: 3s marauders-map-footsteps-2 ease 2.7s forwards;
+}
+.marauders-map-base.marauders-active .marauders-footsteps-2 .marauders-scroll-name {
+  animation: 3s marauders-map-scroll-2 ease 2.7s forwards;
+}
+
+@keyframes marauders-map-footsteps-1 {
+  10%  { transform: translate(8px, -15px)  rotate(30deg); }
+  20%  { transform: translate(30px, -45px) rotate(30deg); }
+  30%  { transform: translate(40px, -75px) rotate(20deg); }
+  40%  { transform: translate(45px, -100px) rotate(10deg); }
+  50%  { transform: translate(50px, -125px) rotate(10deg); }
+  60%  { transform: translate(50px, -135px) rotate(10deg); }
+  100% { transform: translate(50px, -135px) rotate(20deg); }
+}
+@keyframes marauders-map-footsteps-2 {
+  0%   { }
+  80%  { transform: translate(-170px, -25px) rotate(-90deg); }
+  100% { transform: translate(-180px, -25px) rotate(-90deg); }
+}
+@keyframes marauders-map-scroll-1 {
+  10%  { transform: translate(8px, -15px);  }
+  20%  { transform: translate(30px, -45px); }
+  30%  { transform: translate(40px, -75px); }
+  40%  { transform: translate(45px, -100px);}
+  50%  { transform: translate(50px, -125px);}
+  60%  { transform: translate(50px, -135px);}
+  100% { transform: translate(50px, -135px);}
+}
+@keyframes marauders-map-scroll-2 {
+  0%   { }
+  80%  { transform: translate(-170px, -25px); }
+  100% { transform: translate(-180px, -25px); }
+}
+
+/* =========================================================================
+   Cursor footstep trail
+   (DOM-based, using example's .footstep visual)
+   ========================================================================= */
+.marauders-trail-step {
+  position: fixed;
+  background: #3a2418;
+  width: 8px;
+  height: 14px;
+  border-radius: 80% 80% 70% 70% / 130% 130% 25% 25%;
+  z-index: 2147483646;
+  pointer-events: none;
+  animation: marauders-trail-fade 1700ms ease-out forwards;
+  transform-origin: center;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.25));
+}
+.marauders-trail-step::before {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  top: 110%;
+  left: 1px;
+  background: #3a2418;
+  border-radius: 0 0 100% 100%;
+}
+
+@keyframes marauders-trail-fade {
+  0%   { opacity: 0.75; }
+  30%  { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+
+/* =========================================================================
+   Reduced motion
+   ========================================================================= */
 @media (prefers-reduced-motion: reduce) {
-  .marauders-parchment,
-  .marauders-parchment-fold,
+  .marauders-overlay,
+  .marauders-overlay.marauders-fade-out,
   .marauders-ink-text,
   .marauders-ink-text-instant,
-  .marauders-overlay.marauders-fade-out {
+  .marauders-map-base,
+  .marauders-map-flap,
+  .marauders-map-side,
+  .marauders-footstep,
+  .marauders-scroll-name,
+  .marauders-trail-step,
+  .marauders-map-base.marauders-active * {
     animation-duration: 1ms !important;
     animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
   }
 }
