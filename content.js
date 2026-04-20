@@ -13,6 +13,7 @@
   // Map artwork is bundled as web_accessible_resources so it loads from
   // chrome-extension:// URLs regardless of the host page's CSP.
   const IMG = (name) => chrome.runtime.getURL(`images/${name}`);
+  const LOGO = () => chrome.runtime.getURL("logo.jpg");
 
   // ---------- Mount helpers -------------------------------------------------
   const mount = (el) => {
@@ -28,8 +29,8 @@
     }
   };
 
-  // Inject every static image URL as a CSS custom property on :root.
-  // This is how styles.css picks up the extension-local URLs.
+  // Inject every static image URL as a CSS custom property on :root, and
+  // compute a scale factor that fits the unfolded map to the viewport.
   const injectImageVars = () => {
     const s = document.documentElement.style;
     s.setProperty("--mm-base",    `url("${IMG("9.png")}")`);
@@ -41,6 +42,17 @@
     s.setProperty("--mm-side5b",  `url("${IMG("1.png")}")`);
     s.setProperty("--mm-side6b",  `url("${IMG("17.png")}")`);
     s.setProperty("--mm-scroll",  `url("${IMG("scroll.svg")}")`);
+  };
+
+  // Unfolded map spans ~920px × 600px at scale 1. Fit to viewport with a
+  // safety margin; cap at 2.2 to avoid obvious upscaling blur.
+  const computeMapScale = () => {
+    const scale = Math.min(
+      (window.innerWidth  * 0.95) / 920,
+      (window.innerHeight * 0.92) / 600,
+      2.2
+    );
+    document.documentElement.style.setProperty("--mm-scale", scale.toFixed(3));
   };
 
   // ---------- The folded map ------------------------------------------------
@@ -91,15 +103,55 @@
     </div>
   `;
 
+  // ---------- Wandering ambient footsteps (pre-show phase) -----------------
+  const spawnAmbientPair = (field) => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    // Pick a random centre, avoiding the middle 40% where logo + phrase sit.
+    let cx, cy;
+    for (let i = 0; i < 6; i++) {
+      cx = Math.random() * w;
+      cy = Math.random() * h;
+      const inExclusion =
+        cx > w * 0.30 && cx < w * 0.70 &&
+        cy > h * 0.30 && cy < h * 0.70;
+      if (!inExclusion) break;
+    }
+
+    const angleDeg = Math.random() * 360;
+    const angleRad = (angleDeg * Math.PI) / 180;
+
+    for (let side = 0; side < 2; side++) {
+      const perpOffset = 11 * (side === 0 ? 1 : -1);
+      const px = cx + Math.cos(angleRad + Math.PI / 2) * perpOffset;
+      const py = cy + Math.sin(angleRad + Math.PI / 2) * perpOffset;
+
+      const foot = document.createElement("div");
+      foot.className = "marauders-ambient-footstep";
+      foot.style.left = px + "px";
+      foot.style.top = py + "px";
+      foot.style.transform = `translate(-50%, -50%) rotate(${angleDeg + 90}deg)`;
+      foot.style.animationDelay = side * 120 + "ms";
+      field.appendChild(foot);
+
+      setTimeout(() => foot.remove(), 3500 + side * 120);
+    }
+  };
+
   // ---------- Opening ritual ------------------------------------------------
   const buildOpeningOverlay = () => {
     const overlay = document.createElement("div");
     overlay.className = "marauders-overlay marauders-opening";
     overlay.setAttribute("aria-hidden", "true");
     overlay.innerHTML = `
-      <div class="marauders-stage">
-        ${buildMap()}
+      <div class="marauders-ambient-field"></div>
+      <div class="marauders-preshow">
+        <img class="marauders-logo" src="${LOGO()}" alt="" draggable="false">
         <p class="marauders-phrase">${OPEN_PHRASE}</p>
+      </div>
+      <div class="marauders-map-stage">
+        ${buildMap()}
       </div>
     `;
     return overlay;
@@ -109,20 +161,40 @@
     const overlay = buildOpeningOverlay();
     mount(overlay);
 
-    const mapBase = overlay.querySelector(".marauders-map-base");
+    const ambientField = overlay.querySelector(".marauders-ambient-field");
+    const preshow      = overlay.querySelector(".marauders-preshow");
+    const mapStage     = overlay.querySelector(".marauders-map-stage");
+    const mapBase      = overlay.querySelector(".marauders-map-base");
 
     // Timeline:
-    //   0ms     — overlay mounts, map folded, phrase begins fade-in
-    //   800ms   — map begins unfolding (CSS transitions fire)
-    //   3200ms  — all flaps/sides settled (800 + 2400ms of CSS choreography)
-    //   ~6000ms — footsteps walk complete (active+2.5s delay + 3s animation)
-    //   6000ms  — overlay fade-out
-    //   6700ms  — overlay removed
-    requestAnimationFrame(() => {
-      setTimeout(() => mapBase.classList.add("marauders-active"), 800);
-    });
-    setTimeout(() => overlay.classList.add("marauders-fade-out"), 6000);
-    setTimeout(() => overlay.remove(), 6700);
+    //   0ms     — overlay mounts, logo + phrase fade in
+    //   400ms   — ambient footsteps begin spawning (every 250ms)
+    //   2000ms  — stop spawning; preshow + ambient field fade out
+    //   2500ms  — map-stage fades in (folded map appears)
+    //   3100ms  — map begins unfolding (.marauders-active)
+    //   5500ms  — unfold complete (3100 + 2400ms choreography)
+    //   ~7600ms — on-map footsteps walk complete (2s delay + 2.5s animation)
+    //   7800ms  — overlay fade-out
+    //   8500ms  — overlay removed
+
+    const spawnPair = () => spawnAmbientPair(ambientField);
+    let ambientInterval;
+    setTimeout(() => {
+      spawnPair();
+      ambientInterval = setInterval(spawnPair, 250);
+    }, 400);
+    setTimeout(() => clearInterval(ambientInterval), 2000);
+
+    setTimeout(() => {
+      preshow.classList.add("marauders-fade-out");
+      ambientField.classList.add("marauders-fade-out");
+    }, 2000);
+
+    setTimeout(() => mapStage.classList.add("marauders-visible"), 2500);
+    setTimeout(() => mapBase.classList.add("marauders-active"), 3100);
+
+    setTimeout(() => overlay.classList.add("marauders-fade-out"), 7800);
+    setTimeout(() => overlay.remove(), 8500);
   };
 
   // ---------- Closing ritual ------------------------------------------------
@@ -134,7 +206,7 @@
     overlay.className = "marauders-overlay marauders-closing";
     overlay.setAttribute("aria-hidden", "true");
     overlay.innerHTML = `
-      <div class="marauders-stage">
+      <div class="marauders-preshow">
         <p class="marauders-phrase marauders-phrase-instant">${CLOSE_PHRASE}</p>
       </div>
     `;
@@ -206,6 +278,8 @@
 
   // ---------- Boot ----------------------------------------------------------
   injectImageVars();
+  computeMapScale();
+  window.addEventListener("resize", computeMapScale, { passive: true });
 
   whenDomReady(() => {
     applyParchmentFilter();
