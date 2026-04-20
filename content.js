@@ -29,8 +29,7 @@
     }
   };
 
-  // Inject every static image URL as a CSS custom property on :root, and
-  // compute a scale factor that fits the unfolded map to the viewport.
+  // Inject every static image URL as a CSS custom property on :root.
   const injectImageVars = () => {
     const s = document.documentElement.style;
     s.setProperty("--mm-base",    `url("${IMG("9.png")}")`);
@@ -42,17 +41,6 @@
     s.setProperty("--mm-side5b",  `url("${IMG("1.png")}")`);
     s.setProperty("--mm-side6b",  `url("${IMG("17.png")}")`);
     s.setProperty("--mm-scroll",  `url("${IMG("scroll.svg")}")`);
-  };
-
-  // Unfolded map spans ~920px × 600px at scale 1. Fit to viewport with a
-  // safety margin; cap at 2.2 to avoid obvious upscaling blur.
-  const computeMapScale = () => {
-    const scale = Math.min(
-      (window.innerWidth  * 0.95) / 920,
-      (window.innerHeight * 0.92) / 600,
-      2.2
-    );
-    document.documentElement.style.setProperty("--mm-scale", scale.toFixed(3));
   };
 
   // ---------- The folded map ------------------------------------------------
@@ -278,8 +266,6 @@
 
   // ---------- Boot ----------------------------------------------------------
   injectImageVars();
-  computeMapScale();
-  window.addEventListener("resize", computeMapScale, { passive: true });
 
   whenDomReady(() => {
     applyParchmentFilter();

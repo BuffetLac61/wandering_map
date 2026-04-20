@@ -179,7 +179,6 @@
   justify-content: center;
   opacity: 0;
   transition: opacity 500ms ease-in;
-  perspective: 1600px;
 }
 .marauders-map-stage.marauders-visible {
   opacity: 1;
@@ -192,11 +191,10 @@
 .marauders-map-base {
   width: 306px;
   height: 600px;
+  margin: auto;
   background: var(--mm-base) center center / cover;
   position: relative;
-  transform: scale(var(--mm-scale, 1));
-  transform-origin: center center;
-  transform-style: preserve-3d;
+  display: inline-block;
 }
 
 /* ---------- Map flaps (top + bottom) ------------------------------------ */
