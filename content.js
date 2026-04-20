@@ -135,7 +135,9 @@
     overlay.innerHTML = `
       <div class="marauders-ambient-field"></div>
       <div class="marauders-preshow">
-        <img class="marauders-logo" src="${LOGO()}" alt="" draggable="false">
+        <div class="marauders-cover">
+          <img class="marauders-logo" src="${LOGO()}" alt="" draggable="false">
+        </div>
         <p class="marauders-phrase">${OPEN_PHRASE}</p>
       </div>
       <div class="marauders-map-stage">

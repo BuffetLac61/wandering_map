@@ -94,19 +94,40 @@
   opacity: 0;
 }
 
-.marauders-logo {
-  width: clamp(140px, 20vw, 240px);
+/* Cover: two back.png halves side-by-side, same 306x600 footprint as the
+   folded map, so the preshow visually aligns with the map that opens next. */
+.marauders-cover {
+  position: relative;
+  width: 306px;
+  height: 600px;
+  flex-shrink: 0;
+  background-image: var(--mm-back), var(--mm-back);
+  background-repeat: no-repeat, no-repeat;
+  background-position: 0 0, 100% 0;
+  background-size: 50% 100%, 50% 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(0, 0, 0, 0.25);
+  isolation: isolate;
+}
+
+.marauders-cover .marauders-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70%;
   height: auto;
-  display: block;
-  border-radius: 12px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(241, 227, 194, 0.15);
+  /* mix-blend-mode: multiply knocks the white background out of the JPG by
+     multiplying it against the parchment behind it (white ×anything = the
+     thing below, so it disappears; dark ink stays dark). */
+  mix-blend-mode: multiply;
   opacity: 0;
-  transform: scale(0.85);
+  transform: translate(-50%, -50%) scale(0.85);
   animation: marauders-logo-in 1100ms ease-out forwards;
   user-select: none;
+  pointer-events: none;
 }
+
 @keyframes marauders-logo-in {
-  to { opacity: 1; transform: scale(1); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 .marauders-phrase {
