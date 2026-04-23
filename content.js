@@ -271,7 +271,6 @@
 
   whenDomReady(() => {
     applyParchmentFilter();
-    runOpeningSequence();
     setupCursorTrail();
   });
 
